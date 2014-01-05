@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bus Manager</title>
+    <script src="js/qboot.js"></script>
+    <script src="js/qboot.loader.js"></script>
+    <script src="js/cachesvc.js"></script>
+    <script src="js/appdata.js"></script>
+    <script src="js/datacache.js"></script>
+    <script src="js/jsonp_provider.js"></script>
+    <script src="js/adapter.js"></script>
+    <script src="js/bus.js"></script>
+</head>
+<body>
+<textarea name="result" id="result" cols="30" rows="10"></textarea>    
+<div id="settings">
+    <input type="checkbox" value="broadcast" checked="checked"> broadcast
+    <input type="checkbox" value="joke"> joke
+    <button>获取数据</button>
+</div>
+
+<div id="extra_settings">
+    <input type="checkbox" id="enable_cache"> 启用缓存
+    <button id="clear_cache">清空缓存</button>
+</div>
+</body>
+<script>
+var config = {
+    "broadcast" : {
+        host: 'http://localhost:3000',
+        api: 'broadcast',
+        v: '1.0',
+        r: 'xxx',
+        cluster: true,
+        cache: false
+    },
+    "joke": {
+        host: 'http://localhost:3000',
+        api: 'joke',
+        v: '1.0',
+        r: 'yyy',
+        cluster: false,
+        cache: true        
+    }
+};
+
+var result = document.getElementById('result');
+var els = document.querySelectorAll('#settings input');
+var el_enable_cache = document.getElementById('enable_cache');
+
+document.querySelector("#settings button").addEventListener('click', function () {
+    result.value = '';
+    [].slice.call(els).forEach(function (el) {
+        if (el.checked) {
+            var logic = Bus.register({}, config[el.value]);
+            logic.request({
+                api: config[el.value].api
+            }, function (data) {
+                console.log(data);
+                if (data) {
+                    result.value += JSON.stringify(data) + "\n";
+                    // result.value = data.data.key;
+                }
+            }, el_enable_cache.checked ? undefined : Bus.CACHE_FLUSH);
+        }
+    });
+});   
+
+document.getElementById('clear_cache').addEventListener('click', function () {
+    AppData.clear('api.hao.360.cn');
+});
+</script>
+</html>
